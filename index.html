@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+  <title>Calculator</title>
+  <meta name="description" content="A clean, fast calculator with history and memory." />
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.webmanifest" />
+
+  <!-- iOS standalone / home-screen -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Calculator" />
+  <meta name="application-name" content="Calculator" />
+  <meta name="format-detection" content="telephone=no" />
+
+  <!-- Icons -->
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+
+  <!-- iOS launch (splash) screens -->
+  <link rel="apple-touch-startup-image" href="splash/ios-1290x2796.png"
+        media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="splash/ios-1179x2556.png"
+        media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="splash/ios-1170x2532.png"
+        media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="splash/ios-828x1792.png"
+        media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="splash/ios-750x1334.png"
+        media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <main class="calc">
+
+      <!-- Header -->
+      <header class="calc__head">
+        <div class="brand">
+          <img class="brand__logo" src="assets/rakeen-logo.png" alt="Rakeen" width="330" height="111" />
+          <span class="brand__sub">Calculator</span>
+        </div>
+        <button class="icon-btn" id="historyToggle" aria-label="Toggle history" title="History (H)">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 3v6h6" /><path d="M3.5 9a9 9 0 1 1 .5 5" /><path d="M12 7v5l3 2" />
+          </svg>
+        </button>
+      </header>
+
+      <!-- History panel -->
+      <section class="history" id="historyPanel" aria-label="Calculation history" hidden>
+        <div class="history__bar">
+          <span>History</span>
+          <button class="history__clear" id="historyClear">Clear</button>
+        </div>
+        <ul class="history__list" id="historyList"></ul>
+        <p class="history__empty" id="historyEmpty">No calculations yet</p>
+      </section>
+
+      <!-- Display -->
+      <section class="screen" aria-live="polite">
+        <span class="screen__mem" id="memIndicator" aria-label="Memory active" hidden>M</span>
+        <div class="screen__expr" id="expression"></div>
+        <div class="screen__result" id="current">0</div>
+      </section>
+
+      <!-- Memory row -->
+      <div class="mem-row">
+        <button class="mem-btn" data-action="mem-clear" title="Memory Clear">MC</button>
+        <button class="mem-btn" data-action="mem-recall" title="Memory Recall">MR</button>
+        <button class="mem-btn" data-action="mem-add" title="Memory Add">M+</button>
+        <button class="mem-btn" data-action="mem-sub" title="Memory Subtract">M−</button>
+      </div>
+
+      <!-- Keypad -->
+      <div class="keys">
+        <button class="key key--fn" data-action="clear">AC</button>
+        <button class="key key--fn" data-action="delete" aria-label="Delete">DEL</button>
+        <button class="key key--fn" data-value="%">%</button>
+        <button class="key key--op" data-value="/" aria-label="Divide">÷</button>
+
+        <button class="key" data-value="7">7</button>
+        <button class="key" data-value="8">8</button>
+        <button class="key" data-value="9">9</button>
+        <button class="key key--op" data-value="*" aria-label="Multiply">×</button>
+
+        <button class="key" data-value="4">4</button>
+        <button class="key" data-value="5">5</button>
+        <button class="key" data-value="6">6</button>
+        <button class="key key--op" data-value="-" aria-label="Subtract">−</button>
+
+        <button class="key" data-value="1">1</button>
+        <button class="key" data-value="2">2</button>
+        <button class="key" data-value="3">3</button>
+        <button class="key key--op" data-value="+" aria-label="Add">+</button>
+
+        <button class="key key--zero" data-value="0">0</button>
+        <button class="key" data-value=".">.</button>
+        <button class="key key--eq" data-action="equals" aria-label="Equals">=</button>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    // Register the service worker for offline support & installability.
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch((err) => {
+          console.warn("SW registration failed:", err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
