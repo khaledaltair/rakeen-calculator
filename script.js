@@ -91,14 +91,23 @@
     if (!maxW) return;
     const cs = getComputedStyle(screen);
     const contentH = screen.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
-    let size = parseFloat(getComputedStyle(currentEl).fontSize);
+    const baseSize = parseFloat(getComputedStyle(currentEl).fontSize);
+    const maxH = contentH - 2 - expressionEl.offsetHeight;
+
+    // Text scales ~linearly with font-size, so one measurement gives the
+    // target size directly instead of shrink-and-remeasure per pixel.
+    const scale = Math.min(1, maxW / currentEl.scrollWidth, maxH / currentEl.offsetHeight);
+    let size = Math.max(18, Math.floor(baseSize * scale));
+    if (size < baseSize) currentEl.style.fontSize = size + "px";
+
+    // Linear estimate can be off by a hair (rounding, line-height) — nudge.
     let guard = 0;
     while (
       (currentEl.scrollWidth > maxW ||
         expressionEl.offsetHeight + currentEl.offsetHeight > contentH - 2) &&
-      size > 18 && guard < 120
+      size > 18 && guard < 8
     ) {
-      size -= 1.5;
+      size -= 1;
       currentEl.style.fontSize = size + "px";
       guard++;
     }
@@ -286,12 +295,35 @@
   /* -------------------------------------------------- Pointer events */
   // Delegated across the whole calculator; only buttons carrying a
   // data-value / data-action are treated as keys (chrome buttons are ignored).
-  calc.addEventListener("click", (e) => {
-    const key = e.target.closest("button[data-value], button[data-action]");
-    if (!key) return;
+  function activateKey(key) {
     if (key.dataset.action) handleAction(key.dataset.action);
     else if (key.dataset.value) handleValue(key.dataset.value);
     render();
+  }
+
+  // Keys fire on pointerdown, not click: click waits for the finger to LIFT,
+  // which reads as lag. Registering on touch-down matches native calculators.
+  const handledByPointer = new WeakSet();
+
+  calc.addEventListener("pointerdown", (e) => {
+    const key = e.target.closest("button[data-value], button[data-action]");
+    if (!key) return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    handledByPointer.add(key);
+    activateKey(key);
+  });
+
+  // The browser still fires a click after pointerup — swallow it so the key
+  // doesn't register twice. A click with no preceding pointerdown on the key
+  // is keyboard activation (Tab + Enter/Space) and goes through normally.
+  calc.addEventListener("click", (e) => {
+    const key = e.target.closest("button[data-value], button[data-action]");
+    if (!key) return;
+    if (handledByPointer.has(key)) {
+      handledByPointer.delete(key);
+      return;
+    }
+    activateKey(key);
   });
 
   /* -------------------------------------------------- Keyboard */
