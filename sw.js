@@ -2,7 +2,7 @@
  * Service worker — offline-first app shell.
  * Bump CACHE when any precached asset changes so clients update.
  */
-const CACHE = "calculator-v21";
+const CACHE = "calculator-v22";
 
 const ASSETS = [
   "./",
