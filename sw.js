@@ -2,7 +2,7 @@
  * Service worker — offline-first app shell.
  * Bump CACHE when any precached asset changes so clients update.
  */
-const CACHE = "calculator-v22";
+const CACHE = "calculator-v23";
 
 const ASSETS = [
   "./",
@@ -20,9 +20,13 @@ const ASSETS = [
 ];
 
 // Precache the shell, then activate immediately.
+// "no-cache" bypasses the browser's HTTP cache so a new SW version never
+// precaches stale copies of the assets it was bumped to replace.
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE)
+      .then((cache) => cache.addAll(ASSETS.map((u) => new Request(u, { cache: "no-cache" }))))
+      .then(() => self.skipWaiting())
   );
 });
 

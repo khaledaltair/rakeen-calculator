@@ -114,9 +114,20 @@
     // Register the service worker for offline support & installability.
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("sw.js").catch((err) => {
-          console.warn("SW registration failed:", err);
-        });
+        navigator.serviceWorker.register("sw.js")
+          .then((reg) => reg.update())
+          .catch((err) => {
+            console.warn("SW registration failed:", err);
+          });
+      });
+
+      // When an updated SW takes over (skipWaiting + claim), reload once so
+      // the new version shows immediately — no close-and-reopen dance.
+      // Skip the very first install: the page is already the latest.
+      let hadController = !!navigator.serviceWorker.controller;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (!hadController) { hadController = true; return; }
+        window.location.reload();
       });
     }
   </script>
